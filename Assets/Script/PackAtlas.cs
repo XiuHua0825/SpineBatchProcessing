@@ -3,7 +3,6 @@ using System.IO;
 using System.Drawing;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using UnityEngine;
 
 namespace TexturePacker
@@ -156,7 +155,7 @@ namespace TexturePacker
         }
 
         /// <summary>
-        /// _SourceDir = 拆解素材路徑，_Pattern = 要搜尋的檔名(包含)，_AtlasSize = 輸出圖檔大小，_Padding = 間距
+        /// _SourceDir = 拆解素材路徑，_Pattern = 要搜尋檔名有包含的文字，_AtlasSize = 輸出圖檔大小，_Padding = 間距
         /// </summary>
         public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, bool _DebugMode)
         {
@@ -166,7 +165,7 @@ namespace TexturePacker
 
             //1: scan for all the textures we need to pack
             ScanForTextures(_SourceDir, _Pattern);
-            Debug.LogFormat("_SourceDir: {0}； _Pattern: {1}", _SourceDir, _Pattern);
+            Debug.LogFormat("--------------開始產生atlas-------------- \n 素材路徑: {0} \n 檔名包含: {1} 的檔案", _SourceDir, _Pattern);
 
             List<TextureInfo> textures = new List<TextureInfo>();
             textures = SourceTextures.ToList();
@@ -200,49 +199,64 @@ namespace TexturePacker
 
                 textures = leftovers;
             }
-
-            Debug.LogFormat("Atlas count is : {0}", Atlasses.Count);
         }
 
-        public void SaveAtlasses(string _Destination)
+        public void SaveAtlasses(string _Destination, string _pngName)
         {
             int atlasCount = 0;
-            Debug.LogFormat("_Destination: {0}", _Destination);
-            Debug.LogFormat("Path.GetExtension(_Destination): {0}", Path.GetExtension(_Destination));
-            string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
 
+            // get path and file name for export image
+            string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
+            string atlasName = String.Format(prefix.Remove(prefix.IndexOf(".atlas"), 6));
+            Debug.LogFormat("打包圖片輸出位置/名稱: {0}", atlasName);
+
+            // create .atlas.txt file
             string descFile = _Destination;
             StreamWriter tw = new StreamWriter(_Destination);
-            tw.WriteLine("source_tex, atlas_tex, u, v, scale_u, scale_v");
+            Debug.LogFormat(".atlas.txt 輸出位置/名稱: {0}", _Destination);
+ 
+            tw.WriteLine();
+            // write png file name
+            tw.WriteLine(_pngName);
+            // write atlas image size
+            tw.WriteLine("size: {0},{0}", AtlasSize);
+            // write image format
+            tw.WriteLine("format: RGBA8888");
+            // write filter
+            tw.WriteLine("filter: Linear,Linear");
+            // write repeat
+            tw.WriteLine("repeat: none");
 
             foreach (Atlas atlas in Atlasses)
             {
-                // string atlasName = String.Format(prefix + "{0:000}" + ".png", atlasCount);
-                string atlasName = String.Format(prefix.Remove(prefix.IndexOf(".atlas"), 6) + ".png");
-                Debug.LogFormat("atlasName: {0}", atlasName);
-
-                //1: Save images
+                //1: save export image
                 Image img = CreateAtlasImage(atlas);
-                // img.Save(atlasName, System.Drawing.Imaging.ImageFormat.Png);
-                img.Save(atlasName);
+                img.Save(atlasName + ".png");
 
                 //2: save description in file
+                string nodeName = "";
                 foreach (Node n in atlas.Nodes)
                 {
                     if (n.Texture != null)
                     {
-                        tw.Write(n.Texture.Source + ", ");
-                        tw.Write(atlasName + ", ");
-                        tw.Write(((float)n.Bounds.X / atlas.Width).ToString() + ", ");
-                        tw.Write(((float)n.Bounds.Y / atlas.Height).ToString() + ", ");
-                        tw.Write(((float)n.Bounds.Width / atlas.Width).ToString() + ", ");
-                        tw.WriteLine(((float)n.Bounds.Height / atlas.Height).ToString());
+                        // nodeName : get name from image file name
+                        nodeName = n.Texture.Source;
+                        nodeName = nodeName.Substring(nodeName.IndexOf("images\\") + 7);
+                        nodeName = nodeName.Remove(nodeName.IndexOf(".png"));
+                        tw.WriteLine(nodeName);
+                        tw.WriteLine("  rotate: false");
+                        tw.WriteLine("  xy: {0}, {1}", (int)n.Bounds.Location.X, (int)n.Bounds.Location.Y);
+                        tw.WriteLine("  size: {0}, {1}", (int)n.Texture.Width, (int)n.Texture.Height);
+                        tw.WriteLine("  orig: {0}, {1}", (int)n.Texture.Width, (int)n.Texture.Height);
+                        tw.WriteLine("  offset: 0, 0");
+                        tw.WriteLine("  index: -1");
                     }
                 }
 
                 ++atlasCount;
             }
             tw.Close();
+            Debug.LogFormat("產生 {0} 的atlas完成!", atlasName);
 
             if(DebugMode){
                 tw = new StreamWriter(prefix + ".log");
@@ -261,8 +275,9 @@ namespace TexturePacker
 
             foreach (FileInfo fi in files)
             {
+                // skip unity meta file
                 if (fi.FullName.Contains(".png.meta")) continue;
-                // Debug.LogFormat("FullName: {0}", fi.FullName);
+                // get image file
                 Image img = Image.FromFile(fi.FullName);
                 if (img != null)
                 {
@@ -463,112 +478,6 @@ namespace TexturePacker
             }
 
             return img;
-        }
-
-    }
-
-
-
-    class Program
-    {
-        static void DisplayInfo()
-        {
-            Console.WriteLine("  usage: TexturePacker -sp xxx -ft xxx -o xxx [-s xxx] [-b x] [-d]");
-            Console.WriteLine("            -sp | --sourcepath : folder to recursively scan for textures to pack");
-            Console.WriteLine("            -ft | --filetype   : types of textures to pack (*.png only for now)");
-            Console.WriteLine("            -o  | --output     : name of the atlas file to generate");
-            Console.WriteLine("            -s  | --size       : size of 1 side of the atlas file in pixels. Default = 1024");
-            Console.WriteLine("            -b  | --border     : nb of pixels between textures in the atlas. Default = 0");
-            Console.WriteLine("            -d  | --debug      : output debug info in the atlas");
-            Console.WriteLine("  ex: TexturePacker -sp C:\\Temp\\Textures -ft *.png -o C:\\Temp\atlas.txt -s 512 -b 2 --debug");
-        }
-
-        static void Main(string[] args)
-        {
-            Console.WriteLine("TexturePacker - Package rect/non pow 2 textures into square power of 2 atlas");
-
-            if (args.Length == 0)
-            {
-                DisplayInfo();
-                return;
-            }
-
-            List<string> prms = args.ToList();
-
-            string sourcePath = "";
-            string searchPattern = "";
-            string outName = "";
-            int textureSize = 1024;
-            int border = 0;
-            bool debug = false;
-
-            for (int ip = 0; ip < prms.Count; ++ip)
-            {
-                prms[ip] = prms[ip].ToLowerInvariant();
-
-                switch (prms[ip])
-                {
-                    case "-sp":
-                    case "--sourcepath":
-                        if (!prms[ip + 1].StartsWith("-"))
-                        {
-                            sourcePath = prms[ip + 1];
-                            ++ip;
-                        }
-                        break;
-
-                    case "-ft":
-                    case "--filetype":
-                        if (!prms[ip + 1].StartsWith("-"))
-                        {
-                            searchPattern = prms[ip + 1];
-                            ++ip;
-                        }
-                        break;
-
-                    case "-o":
-                    case "--output":
-                        if (!prms[ip + 1].StartsWith("-"))
-                        {
-                            outName = prms[ip + 1];
-                            ++ip;
-                        }
-                        break;
-
-                    case "-s":
-                    case "--size":
-                        if (!prms[ip + 1].StartsWith("-"))
-                        {
-                            textureSize = int.Parse(prms[ip + 1]);
-                            ++ip;
-                        }
-                        break;
-
-                    case "-b":
-                    case "--border":
-                        if (!prms[ip + 1].StartsWith("-"))
-                        {
-                            border = int.Parse(prms[ip + 1]);
-                            ++ip;
-                        }
-                        break;
-
-                    case "-d":
-                    case "--debug":
-                        debug = true;
-                        break;
-                }
-            }
-
-            if (sourcePath == "" || searchPattern == "" || outName == "")
-            {
-                DisplayInfo();
-                return;
-            }
-            else
-            {
-                Console.WriteLine("Processing, please wait");
-            }
         }
     }
 }

@@ -1,0 +1,55 @@
+
+Nimffer_02.png
+size: 1024,1024
+format: RGBA8888
+filter: Linear,Linear
+repeat: none
+2_l_h_07
+  rotate: false
+  xy: 0, 0
+  size: 251, 251
+  orig: 251, 251
+  offset: 0, 0
+  index: -1
+2_bd_07
+  rotate: false
+  xy: 253, 0
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1
+2_eb_07
+  rotate: false
+  xy: 0, 253
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1
+2_m_07
+  rotate: false
+  xy: 505, 0
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1
+2_ot_07
+  rotate: false
+  xy: 252, 253
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1
+2_t_07
+  rotate: false
+  xy: 0, 505
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1
+2_w_07
+  rotate: false
+  xy: 757, 0
+  size: 250, 250
+  orig: 250, 250
+  offset: 0, 0
+  index: -1

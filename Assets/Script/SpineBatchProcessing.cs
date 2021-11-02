@@ -17,17 +17,16 @@ public class SpineBatchProcessing : MonoBehaviour
 
     /// 拆分部位位置: Assets/Resources/動畫名/images/..
     /// 產生的Atlas位置: Assets/Resources/動畫名/..
-    /// 產稱的Spine動畫相關物件: Assets/Resources/動畫名/..
+    /// 產生的Spine動畫相關物件: Assets/Resources/動畫名/..
 
     void Start(){
         foreach (var item in SpineCharacterNames)
         {
-            //Step1. create Atlas
+            //Step1. create .atlas.txt
             Packer packer = new Packer();
             imageSourcePath = "Assets/Resources/Spines/" + item + "/images";
             packer.Process(imageSourcePath, "*", textureSize, padding, IsShowDebug);
-            Debug.LogFormat("######### Prepare for saving atlas: {0}", "Assets/Resources/Spines/" + item + "/" + item);
-            packer.SaveAtlasses("Assets/Resources/Spines/" + item + "/" + item + ".atlas.txt");
+            packer.SaveAtlasses("Assets/Resources/Spines/" + item + "/" + item + ".atlas.txt", item + ".png");
             AssetDatabase.Refresh();
 
             //Step2. create Json
@@ -53,25 +52,23 @@ public class SpineBatchProcessing : MonoBehaviour
         playerData.duration = new float[0];
         playerData.scale = 0.01f;
         playerData.defaultMix = 0.15f;
-        Debug.LogFormat("####### path for atlasdata: {0}", AssetDatabase.GetAssetPath(atlasdata));
         
         atlasdata.atlasFile = (TextAsset)Resources.Load (name + ".atlas", typeof(TextAsset));
-        Debug.LogFormat("####### path for atlasdata.atlasFile: {0}", AssetDatabase.GetAssetPath(atlasdata.atlasFile));
 
         Material[] materials = new Material[1];
-        materials [0] = new Material (Shader.Find ("Spine/Skeleton"));
+        materials [0] = new Material (Shader.Find("Spine/Skeleton"));
+        // materials [0] = new Material (Shader.Find("Standard"));
+        // materials [0].SetInt("_StraightAlphaInput", 1);
+        // materials [0].shader = Shader.Find ("Spine/Skeleton");
         Texture aa = (Texture)Resources.Load (name, typeof(Texture2D));
         materials [0].mainTexture = aa;
-        Debug.LogFormat("####### path for materials [0]: {0}", AssetDatabase.GetAssetPath(materials [0]));
 
         atlasdata.materials = new Material[1];
         atlasdata.materials = materials;
-        Debug.LogFormat("####### path for atlasdata.materials: {0}", AssetDatabase.GetAssetPath(atlasdata.materials[0]));
 
         playerData.atlasAssets = new AtlasAssetBase[1];
         playerData.atlasAssets[0] = atlasdata;
         playerData.skeletonJSON = (TextAsset)Resources.Load (name, typeof(TextAsset));
-        Debug.LogFormat("####### path for skeletonJSON: {0}", AssetDatabase.GetAssetPath(playerData.skeletonJSON));
 
         GameObject player = new GameObject();
         player.name = name;
@@ -83,6 +80,6 @@ public class SpineBatchProcessing : MonoBehaviour
         playerAnim.calculateTangents = true;
 
         // playerAnim.loop = true;
-        Debug.Log("Create character start");
+        Debug.LogFormat("--------------產生{0}Spine動畫角色完成--------------", name);
     }
 }
