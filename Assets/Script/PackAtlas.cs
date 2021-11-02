@@ -207,8 +207,9 @@ namespace TexturePacker
         public void SaveAtlasses(string _Destination)
         {
             int atlasCount = 0;
-            string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
             Debug.LogFormat("_Destination: {0}", _Destination);
+            Debug.LogFormat("Path.GetExtension(_Destination): {0}", Path.GetExtension(_Destination));
+            string prefix = _Destination.Replace(Path.GetExtension(_Destination), "");
 
             string descFile = _Destination;
             StreamWriter tw = new StreamWriter(_Destination);
@@ -217,7 +218,7 @@ namespace TexturePacker
             foreach (Atlas atlas in Atlasses)
             {
                 // string atlasName = String.Format(prefix + "{0:000}" + ".png", atlasCount);
-                string atlasName = String.Format(prefix + ".atlas.txt");
+                string atlasName = String.Format(prefix.Remove(prefix.IndexOf(".atlas"), 6) + ".png");
                 Debug.LogFormat("atlasName: {0}", atlasName);
 
                 //1: Save images

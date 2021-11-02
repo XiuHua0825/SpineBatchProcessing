@@ -236,7 +236,7 @@ MonoBehaviour:
   SpineCharacterNames:
   - SpineBoy_01
   - SpineBoy_02
-  IsShowDebug: 1
+  IsShowDebug: 0
 --- !u!4 &554035700
 Transform:
   m_ObjectHideFlags: 0
