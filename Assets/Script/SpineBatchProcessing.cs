@@ -36,8 +36,6 @@ public class SpineBatchProcessing : MonoBehaviour
         }
     }
 
-
-
     public void CreateCharacter(string _name)   //_name = 素材檔案的名字，素材放在Resources/Spines資料夾底
     {
         SkeletonAnimation playerAnim;
@@ -57,9 +55,6 @@ public class SpineBatchProcessing : MonoBehaviour
 
         Material[] materials = new Material[1];
         materials [0] = new Material (Shader.Find("Spine/Skeleton"));
-        // materials [0] = new Material (Shader.Find("Standard"));
-        // materials [0].SetInt("_StraightAlphaInput", 1);
-        // materials [0].shader = Shader.Find ("Spine/Skeleton");
         Texture aa = (Texture)Resources.Load (name, typeof(Texture2D));
         materials [0].mainTexture = aa;
 
@@ -79,6 +74,7 @@ public class SpineBatchProcessing : MonoBehaviour
         playerAnim.skeletonDataAsset = playerData;
         playerAnim.calculateTangents = true;
 
+        playerAnim.AnimationState.SetAnimation(0, "idle", true);
         playerAnim.loop = true;
         Debug.LogFormat("--------------產生{0}Spine動畫角色完成--------------", name);
     }
