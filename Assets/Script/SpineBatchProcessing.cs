@@ -79,7 +79,7 @@ public class SpineBatchProcessing : MonoBehaviour
         playerAnim.skeletonDataAsset = playerData;
         playerAnim.calculateTangents = true;
 
-        // playerAnim.loop = true;
+        playerAnim.loop = true;
         Debug.LogFormat("--------------產生{0}Spine動畫角色完成--------------", name);
     }
 }
