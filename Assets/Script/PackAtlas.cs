@@ -131,6 +131,11 @@ namespace TexturePacker
         /// Size of the atlas in pixels. Represents one axis, as atlases are square
         /// </summary>
         public int AtlasSize;
+
+        /// <summary>
+        /// Scale of the atlas in pixels. Represents one axis, as atlases are square
+        /// </summary>
+        public float Scale;
         
         /// <summary>
         /// Toggle for debug mode, resulting in debug atlasses to check the packing algorithm
@@ -157,10 +162,11 @@ namespace TexturePacker
         /// <summary>
         /// _SourceDir = 拆解素材路徑，_Pattern = 要搜尋檔名有包含的文字，_AtlasSize = 輸出圖檔大小，_Padding = 間距
         /// </summary>
-        public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, bool _DebugMode)
+        public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, float _Scale = 1, bool _DebugMode = false)
         {
             Padding = _Padding;
             AtlasSize = _AtlasSize;
+            Scale = _Scale;
             DebugMode = _DebugMode;
 
             //1: scan for all the textures we need to pack
@@ -286,6 +292,7 @@ namespace TexturePacker
                         TextureInfo ti = new TextureInfo();
 
                         ti.Source = fi.FullName;
+                        // 圖片在合併圖上的大小(包含空白區)
                         ti.Width = img.Width;
                         ti.Height = img.Height;
 
@@ -301,6 +308,7 @@ namespace TexturePacker
             }
         }
 
+        // 重疊應該是這邊!!!!!!!!!!!!!!!!
         private void HorizontalSplit(Node _ToSplit, int _Width, int _Height, List<Node> _List)
         {
             Node n1 = new Node();
@@ -316,6 +324,8 @@ namespace TexturePacker
             n2.Bounds.Width = _ToSplit.Bounds.Width;
             n2.Bounds.Height = _ToSplit.Bounds.Height - _Height - Padding;
             n2.SplitType = SplitType.Horizontal;
+
+            Debug.LogFormat("HorizontalSplit: {0}, {1}", _Width, _ToSplit.Bounds.Width);
 
             if (n1.Bounds.Width > 0 && n1.Bounds.Height > 0)
                 _List.Add(n1);
@@ -339,6 +349,8 @@ namespace TexturePacker
             n2.Bounds.Height = _ToSplit.Bounds.Height - _Height - Padding;
             n2.SplitType = SplitType.Horizontal;
 
+            Debug.LogFormat("VerticalSplit: {0}, {1}", _Height, _ToSplit.Bounds.Height);
+
             if (n1.Bounds.Width > 0 && n1.Bounds.Height > 0)
                 _List.Add(n1);
             if (n2.Bounds.Width > 0 && n2.Bounds.Height > 0)
@@ -351,6 +363,8 @@ namespace TexturePacker
 
             float nodeArea = _Node.Bounds.Width * _Node.Bounds.Height;
             float maxCriteria = 0.0f;
+            FitHeuristic = BestFitHeuristic.MaxOneAxis;
+            // Debug.LogFormat("_Textures: {0}", _Textures.Count);
 
             foreach (TextureInfo ti in _Textures)
             {
@@ -362,12 +376,16 @@ namespace TexturePacker
                         {
                             float wRatio = (float)ti.Width / (float)_Node.Bounds.Width;
                             float hRatio = (float)ti.Height / (float)_Node.Bounds.Height;
+                            Debug.LogFormat("wRatio: {0}, {1}, {2}", ti.Width, _Node.Bounds.Width, wRatio);
+                            Debug.LogFormat("hRatio: {0}, {1}, {2}", ti.Height, _Node.Bounds.Height, hRatio);
                             float ratio = wRatio > hRatio ? wRatio : hRatio;
                             if (ratio > maxCriteria)
                             {
                                 maxCriteria = ratio;
                                 bestFit = ti;
                             }
+                            // bestFit.Width = Convert.ToInt32((float)ti.Width * ratio);
+                            // bestFit.Height = Convert.ToInt32((float)ti.Height * ratio);
                         }
                         break;
 
@@ -387,7 +405,7 @@ namespace TexturePacker
                         break;
                 }
             }
-
+            // Debug.LogFormat("Best fit size: {0}, {1}", bestFit.Width, bestFit.Height);
             return bestFit;
         }
 
@@ -417,6 +435,7 @@ namespace TexturePacker
                     if (node.SplitType == SplitType.Horizontal)
                     {
                         HorizontalSplit(node, bestFit.Width, bestFit.Height, freeList);
+                        // Debug.LogFormat("node split size: {0}, {1}", bestFit.Width, bestFit.Height);
                     }
                     else
                     {
@@ -430,6 +449,7 @@ namespace TexturePacker
                     textures.Remove(bestFit);
                 }
 
+                Debug.LogFormat("node.Bounds size2: {0}, {1}", node.Bounds.Width, node.Bounds.Height);
                 _Atlas.Nodes.Add(node);
             }
 

@@ -12,7 +12,8 @@ public class SpineBatchProcessing : MonoBehaviour
     private string imageSourcePath; // 拆解素材的資料夾
     private int textureSize = 1024;
     private int padding = 2;
-    public bool IsShowDebug = false;
+    private float scale = 1;
+    public bool createLogFile = false;
 
 
     /// 拆分部位位置: Assets/Resources/動畫名/images/..
@@ -25,7 +26,7 @@ public class SpineBatchProcessing : MonoBehaviour
             //Step1. create .atlas.txt
             Packer packer = new Packer();
             imageSourcePath = "Assets/Resources/Spines/" + item + "/images";
-            packer.Process(imageSourcePath, "*", textureSize, padding, IsShowDebug);
+            packer.Process(imageSourcePath, "*", textureSize, padding, scale, createLogFile);
             packer.SaveAtlasses("Assets/Resources/Spines/" + item + "/" + item + ".atlas.txt", item + ".png");
             AssetDatabase.Refresh();
 
