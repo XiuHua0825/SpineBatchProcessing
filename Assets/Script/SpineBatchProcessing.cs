@@ -9,26 +9,39 @@ using TexturePacker;
 public class SpineBatchProcessing : MonoBehaviour
 {
     public string[] SpineCharacterNames;
-    private string imageSourcePath; // 拆解素材的資料夾
+    private string rootPath = "Assets/Resources/Spines/";       // 放素材和檔案的根目錄
+    private string spinePath;                                   // 動畫所需檔案的資料夾
+    private string imagesSourcePath;                            // 拆解素材的資料夾: Assets/Resources/動畫名/images/..
+    private string atlasTxtFileName;                            // 打包後的AtlasTxt的檔案名 
+    private string atlasPngFileName;                            // 打包後的AtlasPng的檔案名 
+    private string atlasTxtFilePath;                            // 打包後的AtlasTxT的檔案位置(含檔名): Assets/Resources/動畫名/..
+    private string atlasPngFilePath;                            // 打包後的AtlasPng的檔案位置(含檔名): Assets/Resources/動畫名/..
     private int textureSize = 1024;
     private int padding = 2;
     private float scale = 1;
     public bool createLogFile = false;
 
-
-    /// 拆分部位位置: Assets/Resources/動畫名/images/..
-    /// 產生的Atlas位置: Assets/Resources/動畫名/..
-    /// 產生的Spine動畫相關物件: Assets/Resources/動畫名/..
-
     void Start(){
         foreach (var item in SpineCharacterNames)
         {
+            spinePath = rootPath + item + "/";
+            imagesSourcePath = spinePath + "images";
+            atlasTxtFileName = item + ".atlas.txt";
+            atlasPngFileName = item + ".png";
+            atlasTxtFilePath = spinePath + atlasTxtFileName;
+            atlasPngFilePath = spinePath + atlasPngFileName;
+
             //Step1. create .atlas.txt
             Packer packer = new Packer();
-            imageSourcePath = "Assets/Resources/Spines/" + item + "/images";
-            packer.Process(imageSourcePath, "*", textureSize, padding, scale, createLogFile);
-            packer.SaveAtlasses("Assets/Resources/Spines/" + item + "/" + item + ".atlas.txt", item + ".png");
+            packer.Process(imagesSourcePath, "*", textureSize, padding, scale, createLogFile);
+            packer.SaveAtlasses(atlasTxtFilePath, atlasPngFileName);
             AssetDatabase.Refresh();
+
+            TextureImporter importer = (TextureImporter)TextureImporter.GetAtPath(atlasPngFilePath);
+            importer.maxTextureSize = 1024;
+            importer.crunchedCompression = true;
+            importer.compressionQuality = 0;
+            importer.SaveAndReimport();
 
             //Step2. create Json
 
