@@ -206,9 +206,9 @@ namespace TexturePacker
                 textures = leftovers;
             }
         }
-        
+
         /// <summary>
-        /// _Destination = .atlas.txt 輸出位置/名稱，_pngName = atlas.png 檔案名稱
+        /// _Destination = .atlas.txt 輸出位置/名稱，_pngName = 打包圖片輸出位置/名稱
         /// </summary>
         public void SaveAtlasses(string _Destination, string _pngName)
         {
