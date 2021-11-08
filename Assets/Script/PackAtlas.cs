@@ -131,6 +131,11 @@ namespace TexturePacker
         /// Size of the atlas in pixels. Represents one axis, as atlases are square
         /// </summary>
         public int AtlasSize;
+
+        /// <summary>
+        /// Scale of the atlas in pixels. Represents one axis, as atlases are square
+        /// </summary>
+        public float Scale;
         
         /// <summary>
         /// Toggle for debug mode, resulting in debug atlasses to check the packing algorithm
@@ -157,10 +162,11 @@ namespace TexturePacker
         /// <summary>
         /// _SourceDir = 拆解素材路徑，_Pattern = 要搜尋檔名有包含的文字，_AtlasSize = 輸出圖檔大小，_Padding = 間距
         /// </summary>
-        public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, bool _DebugMode)
+        public void Process(string _SourceDir, string _Pattern, int _AtlasSize, int _Padding, float _Scale = 1, bool _DebugMode = false)
         {
             Padding = _Padding;
             AtlasSize = _AtlasSize;
+            Scale = _Scale;
             DebugMode = _DebugMode;
 
             //1: scan for all the textures we need to pack
@@ -201,6 +207,9 @@ namespace TexturePacker
             }
         }
 
+        /// <summary>
+        /// _Destination = .atlas.txt 輸出位置/名稱，_pngName = 打包圖片輸出位置/名稱
+        /// </summary>
         public void SaveAtlasses(string _Destination, string _pngName)
         {
             int atlasCount = 0;
@@ -286,6 +295,7 @@ namespace TexturePacker
                         TextureInfo ti = new TextureInfo();
 
                         ti.Source = fi.FullName;
+                        // 圖片在合併圖上的大小(包含空白區)
                         ti.Width = img.Width;
                         ti.Height = img.Height;
 
@@ -351,6 +361,7 @@ namespace TexturePacker
 
             float nodeArea = _Node.Bounds.Width * _Node.Bounds.Height;
             float maxCriteria = 0.0f;
+            FitHeuristic = BestFitHeuristic.MaxOneAxis;
 
             foreach (TextureInfo ti in _Textures)
             {
@@ -387,7 +398,6 @@ namespace TexturePacker
                         break;
                 }
             }
-
             return bestFit;
         }
 
